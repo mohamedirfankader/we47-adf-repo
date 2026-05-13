@@ -1,0 +1,241 @@
+{
+	"name": "usecase1_blob_adls",
+	"properties": {
+		"activities": [
+			{
+				"name": "copy data from blob to adls",
+				"description": "source send data to blob, this activity will pull once in 15 minutes and write to adls",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "ETA Validation 15 mins",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 2,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "JsonSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings",
+							"copyBehavior": "PreserveHierarchy"
+						},
+						"formatSettings": {
+							"type": "JsonWriteSettings"
+						}
+					},
+					"enableStaging": false,
+					"parallelCopies": 2,
+					"enableSkipIncompatibleRow": true,
+					"logSettings": {
+						"enableCopyActivityLog": true,
+						"copyActivityLogSettings": {
+							"logLevel": "Warning",
+							"enableReliableLogging": false
+						},
+						"logLocationSettings": {
+							"linkedServiceName": {
+								"referenceName": "ManuaADLSStorageTarget",
+								"type": "LinkedServiceReference"
+							},
+							"path": "adlscontainer"
+						}
+					},
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "call_id",
+									"type": "String"
+								},
+								"sink": {
+									"path": "$['call_id']"
+								}
+							},
+							{
+								"source": {
+									"name": "caller_id",
+									"type": "Int64"
+								},
+								"sink": {
+									"path": "$['caller_id']"
+								}
+							},
+							{
+								"source": {
+									"name": "device_id",
+									"type": "Int16"
+								},
+								"sink": {
+									"path": "$['device_id']"
+								}
+							},
+							{
+								"source": {
+									"name": "receiver_id",
+									"type": "String"
+								},
+								"sink": {
+									"path": "$['receiver_id']"
+								}
+							},
+							{
+								"source": {
+									"name": "call_type",
+									"type": "String"
+								},
+								"sink": {
+									"path": "$['call_type']"
+								}
+							},
+							{
+								"source": {
+									"name": "tower_id",
+									"type": "String"
+								},
+								"sink": {
+									"path": "$['tower_id']"
+								}
+							},
+							{
+								"source": {
+									"name": "timestamp",
+									"type": "String"
+								},
+								"sink": {
+									"path": "$['timestamp']"
+								}
+							},
+							{
+								"source": {
+									"name": "cost",
+									"type": "String"
+								},
+								"sink": {
+									"path": "$['cost']"
+								}
+							}
+						]
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "CDR_Fact_Data",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "Json1",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "Delete1",
+				"type": "Delete",
+				"dependsOn": [
+					{
+						"activity": "copy data from blob to adls",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "CDR_Fact_Data",
+						"type": "DatasetReference"
+					},
+					"enableLogging": false,
+					"storeSettings": {
+						"type": "AzureBlobStorageReadSettings",
+						"recursive": true,
+						"enablePartitionDiscovery": false
+					}
+				}
+			},
+			{
+				"name": "ETA Validation 15 mins",
+				"type": "Validation",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "CDR_Fact_Data",
+						"type": "DatasetReference"
+					},
+					"timeout": "0.00:01:00",
+					"sleep": 10,
+					"minimumSize": 1
+				}
+			},
+			{
+				"name": "Fail1",
+				"type": "Fail",
+				"dependsOn": [
+					{
+						"activity": "ETA Validation 15 mins",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"message": "File not found after ETA is met",
+					"errorCode": "1"
+				}
+			},
+			{
+				"name": "Fail1_copy1",
+				"type": "Fail",
+				"dependsOn": [
+					{
+						"activity": "copy data from blob to adls",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"message": "File found within the SLA, but failure occurs for some other reason",
+					"errorCode": "2"
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2026-05-02T05:07:25Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

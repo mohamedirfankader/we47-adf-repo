@@ -1,0 +1,29 @@
+{
+	"name": "parent_pipeline1",
+	"properties": {
+		"activities": [
+			{
+				"name": "Execute Pipeline1",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "usecase4_SOI_bigquery_dwh_azure_SOI_adls_datalake",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"loaddate": "2026-05-04"
+					}
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2026-05-09T06:05:00Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

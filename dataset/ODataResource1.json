@@ -1,0 +1,16 @@
+{
+	"name": "ODataResource1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ODataForSAPByDesign",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "ODataResource",
+		"schema": [],
+		"typeProperties": {
+			"path": "SellerPartyNameCollection"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

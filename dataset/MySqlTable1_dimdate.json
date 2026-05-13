@@ -1,0 +1,16 @@
+{
+	"name": "MySqlTable1_dimdate",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "GCP_MYSQL_Telco_Schema",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "MySqlTable",
+		"schema": [],
+		"typeProperties": {
+			"tableName": "dim_date"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

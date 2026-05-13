@@ -1,0 +1,16 @@
+{
+	"name": "MySqlTable1_factload",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "GCP_MYSQL_Telco_Schema",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "MySqlTable",
+		"schema": [],
+		"typeProperties": {
+			"tableName": "txn_fact"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,63 @@
+{
+	"name": "CDR_Fact_Data",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ManualBlobStorageSource",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "cdr_history_load.csv",
+				"folderPath": "landing-pad",
+				"container": "sourcecontainer"
+			},
+			"columnDelimiter": ",",
+			"rowDelimiter": "\n",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "call_id",
+				"type": "String"
+			},
+			{
+				"name": "caller_id",
+				"type": "String"
+			},
+			{
+				"name": "device_id",
+				"type": "String"
+			},
+			{
+				"name": "receiver_id",
+				"type": "String"
+			},
+			{
+				"name": "duration",
+				"type": "String"
+			},
+			{
+				"name": "call_type",
+				"type": "String"
+			},
+			{
+				"name": "tower_id",
+				"type": "String"
+			},
+			{
+				"name": "timestamp",
+				"type": "String"
+			},
+			{
+				"name": "cost",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

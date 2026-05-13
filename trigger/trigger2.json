@@ -1,0 +1,39 @@
+{
+	"name": "trigger2",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipeline": {
+			"pipelineReference": {
+				"referenceName": "usecase8_ADF_ADB_Api_ExecPipeline_Params",
+				"type": "PipelineReference"
+			},
+			"parameters": {
+				"parent_pipeline_api_param1": [
+					"SGD",
+					"USD"
+				],
+				"parent_pipeline_filename_param2": "apidata"
+			}
+		},
+		"type": "TumblingWindowTrigger",
+		"typeProperties": {
+			"frequency": "Hour",
+			"interval": 1,
+			"startTime": "2026-05-12T01:15:00Z",
+			"endTime": "2026-05-31T01:15:00Z",
+			"delay": "00:00:00",
+			"maxConcurrency": 50,
+			"retryPolicy": {
+				"intervalInSeconds": 30
+			},
+			"dependsOn": [
+				{
+					"type": "SelfDependencyTumblingWindowTriggerReference",
+					"size": "0.01:00:00",
+					"offset": "-0.01:00:00"
+				}
+			]
+		}
+	}
+}

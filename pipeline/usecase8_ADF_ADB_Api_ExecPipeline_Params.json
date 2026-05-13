@@ -1,0 +1,79 @@
+{
+	"name": "usecase8_ADF_ADB_Api_ExecPipeline_Params",
+	"properties": {
+		"activities": [
+			{
+				"name": "Execute Pipeline1",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "usecase5_restapi_ingestion",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"enter_list_of_currencies": {
+							"value": "@pipeline().parameters.parent_pipeline_api_param1",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Load API Data Silver Gold",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "Execute Pipeline1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Users/inceptezdatascience2@gmail.com/databricks-code-repo/11_Datafactory_Usecases/ADF_usecase_8_API_CALL",
+					"baseParameters": {
+						"filename": {
+							"value": "@pipeline().parameters.parent_pipeline_filename_param2",
+							"type": "Expression"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricks1",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"parameters": {
+			"parent_pipeline_api_param1": {
+				"type": "array",
+				"defaultValue": [
+					"INR",
+					"USD",
+					"SGD"
+				]
+			},
+			"parent_pipeline_filename_param2": {
+				"type": "string",
+				"defaultValue": "apidata"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2026-05-10T04:20:34Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

@@ -1,0 +1,28 @@
+{
+	"name": "trigger1",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "usecase9_Orchestrate_Dataflow",
+					"type": "PipelineReference"
+				},
+				"parameters": {
+					"partparamtodataflow": 3
+				}
+			}
+		],
+		"type": "BlobEventsTrigger",
+		"typeProperties": {
+			"blobPathBeginsWith": "/container1/blobs/trigg",
+			"blobPathEndsWith": "_success",
+			"ignoreEmptyBlobs": true,
+			"scope": "/subscriptions/e68a829e-83e8-42bc-8494-b4ceb80be6c7/resourceGroups/wd36-rg1/providers/Microsoft.Storage/storageAccounts/we47toolstorage",
+			"events": [
+				"Microsoft.Storage.BlobCreated"
+			]
+		}
+	}
+}
