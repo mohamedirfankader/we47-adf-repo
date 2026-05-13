@@ -1,0 +1,15 @@
+{
+	"name": "wd36-prod",
+	"properties": {
+		"trustModeClaimForMi": {
+			"value": "Enabled",
+			"editable": true
+		}
+	},
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "8bddd37c-744f-4013-9705-e0af681d3dbd",
+		"tenantId": "089cf941-fd24-44c5-8a92-985784dc42d6"
+	}
+}
