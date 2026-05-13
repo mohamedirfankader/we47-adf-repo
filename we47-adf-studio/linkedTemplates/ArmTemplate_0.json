@@ -1,0 +1,629 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "we47-adf-studio"
+		},
+		"AzureSqlDatabase1_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'AzureSqlDatabase1'"
+		},
+		"CTSJobADLSTarget1_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'CTSJobADLSTarget1'"
+		},
+		"SqlServer1_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'SqlServer1'"
+		},
+		"AzureBlobStorage1_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorage1'"
+		},
+		"AzureDataLakeStorage1_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'AzureDataLakeStorage1'"
+		},
+		"AzureDatabricks1_accessToken": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accessToken' of 'AzureDatabricks1'"
+		},
+		"GCP_MYSQL_Telco_Schema_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'GCP_MYSQL_Telco_Schema'"
+		},
+		"GoogleBigQuery1_keyFileContent": {
+			"type": "secureString",
+			"metadata": "Secure string for 'keyFileContent' of 'GoogleBigQuery1'"
+		},
+		"ManuaADLSStorageTarget_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'ManuaADLSStorageTarget'"
+		},
+		"ManualBlobStorageSource_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'ManualBlobStorageSource'"
+		},
+		"ODataForSAPByDesign_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'ODataForSAPByDesign'"
+		},
+		"AzureSqlDatabase1_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "iz-sqlserver-db3.database.windows.net"
+		},
+		"AzureSqlDatabase1_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "izdb"
+		},
+		"AzureSqlDatabase1_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "izadmin"
+		},
+		"CTSJobADLSTarget1_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://we47toolstorage.dfs.core.windows.net/"
+		},
+		"SqlServer1_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "iz-sqlserver-db3.database.windows.net"
+		},
+		"SqlServer1_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "izdb"
+		},
+		"SqlServer1_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "izadmin"
+		},
+		"AzureDataLakeStorage1_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://we47toolstorage.dfs.core.windows.net/"
+		},
+		"AzureDatabricks1_properties_typeProperties_existingClusterId": {
+			"type": "string",
+			"defaultValue": "0408-130813-6txnfq1u"
+		},
+		"GCP_MYSQL_Telco_Schema_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "35.223.80.16"
+		},
+		"GCP_MYSQL_Telco_Schema_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "telco_schema"
+		},
+		"GCP_MYSQL_Telco_Schema_properties_typeProperties_username": {
+			"type": "string",
+			"defaultValue": "inceptez"
+		},
+		"ManuaADLSStorageTarget_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://wd36adlsstoragedata.dfs.core.windows.net/"
+		},
+		"ODataForSAPByDesign_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://my340052.sapbydesign.com/sap/byd/odata/cust/v1/khsupplierinvoice/"
+		},
+		"ODataForSAPByDesign_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "rtech1"
+		},
+		"RestService1_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://v6.exchangerate-api.com/v6/d2dc0f83029c12073054e204/latest/USD"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureSqlDatabase1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"server": "[parameters('AzureSqlDatabase1_properties_typeProperties_server')]",
+					"database": "[parameters('AzureSqlDatabase1_properties_typeProperties_database')]",
+					"encrypt": "optional",
+					"trustServerCertificate": true,
+					"authenticationType": "SQL",
+					"userName": "[parameters('AzureSqlDatabase1_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('AzureSqlDatabase1_password')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CTSJobADLSTarget1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('CTSJobADLSTarget1_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('CTSJobADLSTarget1_accountKey')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SqlServer1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"server": "[parameters('SqlServer1_properties_typeProperties_server')]",
+					"database": "[parameters('SqlServer1_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": true,
+					"authenticationType": "SQL",
+					"userName": "[parameters('SqlServer1_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('SqlServer1_password')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/default')]",
+			"type": "Microsoft.DataFactory/factories/managedVirtualNetworks",
+			"apiVersion": "2018-06-01",
+			"properties": {},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureSqlTable1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "izdb",
+					"table": "cdr"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DelimitedText2')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "CTSJobADLSTarget1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "adfdata",
+						"fileSystem": "container1"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/CTSJobADLSTarget1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SqlServerTable1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "SqlServer1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "izdb1",
+					"table": "customer1"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/SqlServer1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SqlServerTable1_copy1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "SqlServer1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "izdb1",
+					"table": "dim_date"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/SqlServer1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SqlServerTable1_copy2')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "SqlServer1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "izdb1",
+					"table": "txn_fact"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/SqlServer1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AutoResolveIntegrationRuntime')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "Managed",
+				"typeProperties": {
+					"computeProperties": {
+						"location": "AutoResolve",
+						"dataFlowProperties": {
+							"computeType": "General",
+							"coreCount": 8,
+							"timeToLive": 0
+						}
+					}
+				},
+				"managedVirtualNetwork": {
+					"type": "ManagedVirtualNetworkReference",
+					"referenceName": "default"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/managedVirtualNetworks/default')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/testpipeline')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Script2",
+						"type": "Script",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"linkedServiceName": {
+							"referenceName": "SqlServer1",
+							"type": "LinkedServiceReference"
+						},
+						"typeProperties": {
+							"scripts": [
+								{
+									"type": "Query",
+									"text": "select cname from curr"
+								}
+							],
+							"scriptBlockExecutionTimeout": "02:00:00"
+						}
+					},
+					{
+						"name": "ForEach2",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Script2",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Script2').output.resultSets[0].rows",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "Web3",
+									"type": "WebActivity",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"method": "GET",
+										"headers": {},
+										"url": {
+											"value": "@concat('https://v6.exchangerate-api.com/v6/d2dc0f83029c12073054e204/latest/',item().cname)",
+											"type": "Expression"
+										},
+										"connectVia": {
+											"referenceName": "AutoResolveIntegrationRuntime",
+											"type": "IntegrationRuntimeReference"
+										}
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2026-05-09T06:04:58Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/SqlServer1')]",
+				"[concat(variables('factoryId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureBlobStorage1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "connection to read data from BLOB of Naukri",
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('AzureBlobStorage1_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureDataLakeStorage1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('AzureDataLakeStorage1_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('AzureDataLakeStorage1_accountKey')]"
+					}
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureDatabricks1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureDatabricks",
+				"typeProperties": {
+					"domain": "https://adb-7405605290162515.15.azuredatabricks.net",
+					"accessToken": {
+						"type": "SecureString",
+						"value": "[parameters('AzureDatabricks1_accessToken')]"
+					},
+					"existingClusterId": "[parameters('AzureDatabricks1_properties_typeProperties_existingClusterId')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/GCP_MYSQL_Telco_Schema')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "MySql",
+				"typeProperties": {
+					"server": "[parameters('GCP_MYSQL_Telco_Schema_properties_typeProperties_server')]",
+					"port": 3306,
+					"database": "[parameters('GCP_MYSQL_Telco_Schema_properties_typeProperties_database')]",
+					"username": "[parameters('GCP_MYSQL_Telco_Schema_properties_typeProperties_username')]",
+					"sslMode": 1,
+					"useSystemTrustStore": 0,
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('GCP_MYSQL_Telco_Schema_password')]"
+					},
+					"driverVersion": "v2"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/GoogleBigQuery1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "GoogleBigQueryV2",
+				"version": "1.1",
+				"typeProperties": {
+					"projectId": "inceptez-gcp-batchwd25",
+					"authenticationType": "ServiceAuthentication",
+					"keyFileContent": {
+						"type": "SecureString",
+						"value": "[parameters('GoogleBigQuery1_keyFileContent')]"
+					}
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ManuaADLSStorageTarget')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('ManuaADLSStorageTarget_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('ManuaADLSStorageTarget_accountKey')]"
+					}
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ManualBlobStorageSource')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('ManualBlobStorageSource_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ODataForSAPByDesign')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "OData",
+				"typeProperties": {
+					"url": "[parameters('ODataForSAPByDesign_properties_typeProperties_url')]",
+					"authenticationType": "Basic",
+					"userName": "[parameters('ODataForSAPByDesign_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('ODataForSAPByDesign_password')]"
+					}
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/RestService1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "RestService",
+				"typeProperties": {
+					"url": "[parameters('RestService1_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": true,
+					"authenticationType": "Anonymous"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		}
+	]
+}

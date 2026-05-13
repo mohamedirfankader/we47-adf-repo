@@ -1,0 +1,1405 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "we47-adf-studio"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflow1')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "AzureSqlTable1",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "DelimitedText2",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "select1"
+						},
+						{
+							"name": "derivedColumn1"
+						},
+						{
+							"name": "surrogateKey1"
+						}
+					],
+					"scriptLines": [
+						"parameters{",
+						"     partitions as integer (2)",
+						"}",
+						"source(output(",
+						"          cid as integer,",
+						"          custid as integer,",
+						"          call_dur as integer,",
+						"          cost as double,",
+						"          insertdt as timestamp",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     inferDriftedColumnTypes: true,",
+						"     enableCdc: true,",
+						"     mode: 'read',",
+						"     skipInitialLoad: false,",
+						"     waterMarkColumn: 'cid',",
+						"     batchSize: 2,",
+						"     isolationLevel: 'READ_COMMITTED',",
+						"     query: 'select * from izdb.cdr',",
+						"     format: 'query',",
+						"     partitionBy('roundRobin', 2)) ~> source1",
+						"source1 select(mapColumn(",
+						"          cid,",
+						"          customerid = custid,",
+						"          call_dur,",
+						"          cost,",
+						"          insertdt",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"select1 derive(loaddt = currentDate()) ~> derivedColumn1",
+						"derivedColumn1 keyGenerate(output(seqnosk as long),",
+						"     startAt: 1L,",
+						"     stepValue: 1L,",
+						"     partitionBy('roundRobin', 2)) ~> surrogateKey1",
+						"surrogateKey1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pipeline2')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow1",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "dataflow1",
+								"type": "DataFlowReference",
+								"parameters": {
+									"partitions": {
+										"value": "@pipeline().parameters.partitions",
+										"type": "Expression"
+									}
+								},
+								"datasetParameters": {
+									"source1": {},
+									"sink1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine",
+							"continuationSettings": {
+								"customizedCheckpointKey": "6153a0b1-0760-43f8-ae5a-8f31fb52528a"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"partitions": {
+						"type": "int",
+						"defaultValue": 2
+					}
+				},
+				"annotations": [],
+				"lastPublishTime": "2026-05-09T06:04:58Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/dataflow1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CDR_Fact_Data')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "cdr_history_load.csv",
+						"folderPath": "landing-pad",
+						"container": "sourcecontainer"
+					},
+					"columnDelimiter": ",",
+					"rowDelimiter": "\n",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "call_id",
+						"type": "String"
+					},
+					{
+						"name": "caller_id",
+						"type": "String"
+					},
+					{
+						"name": "device_id",
+						"type": "String"
+					},
+					{
+						"name": "receiver_id",
+						"type": "String"
+					},
+					{
+						"name": "duration",
+						"type": "String"
+					},
+					{
+						"name": "call_type",
+						"type": "String"
+					},
+					{
+						"name": "tower_id",
+						"type": "String"
+					},
+					{
+						"name": "timestamp",
+						"type": "String"
+					},
+					{
+						"name": "cost",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DelimitedText1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@concat('apidata_',formatDateTime(utcNow(),'yyyy-MM-dd_hh-mm-ss'))",
+							"type": "Expression"
+						},
+						"folderPath": "targetdir",
+						"fileSystem": "adfcontainer"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "prodid",
+						"type": "String"
+					},
+					{
+						"name": "amt",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DestinationDataset_r8x')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "custdatamerged",
+						"folderPath": "targetdir",
+						"fileSystem": "adfcontainer"
+					}
+				},
+				"schema": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/GoogleBigQueryObject1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "GoogleBigQuery1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "GoogleBigQueryV2Object",
+				"schema": [],
+				"typeProperties": {
+					"dataset": "inceptez_insurance",
+					"table": "claim_transactions"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Json1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ManuaADLSStorageTarget",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "we47target",
+						"fileSystem": "adlscontainer"
+					}
+				},
+				"schema": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Json2')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "detaildata",
+						"folderPath": "adfdataflowdir",
+						"fileSystem": "container1"
+					}
+				},
+				"schema": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/MySqlTable1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "GCP_MYSQL_Telco_Schema",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "MySqlTable",
+				"schema": [],
+				"typeProperties": {
+					"tableName": "customer1"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/MySqlTable1_dimdate')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "GCP_MYSQL_Telco_Schema",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "MySqlTable",
+				"schema": [],
+				"typeProperties": {
+					"tableName": "dim_date"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/MySqlTable1_factload')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "GCP_MYSQL_Telco_Schema",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "MySqlTable",
+				"schema": [],
+				"typeProperties": {
+					"tableName": "txn_fact"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ODataResource1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ODataForSAPByDesign",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "ODataResource",
+				"schema": [],
+				"typeProperties": {
+					"path": "SellerPartyNameCollection"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Parquet1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "we47adfdata",
+						"fileSystem": "container1"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/RestResource1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "RestService1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SourceDataset_r8x')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "custs_header",
+						"folderPath": "sourcedir",
+						"container": "rajeswariblobcontainer"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": null
+				},
+				"schema": [
+					{
+						"name": "custid",
+						"type": "String"
+					},
+					{
+						"name": "fname",
+						"type": "String"
+					},
+					{
+						"name": "lname",
+						"type": "String"
+					},
+					{
+						"name": "age",
+						"type": "String"
+					},
+					{
+						"name": "profession",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/getmeta_conditional')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Get Metadata1",
+						"type": "GetMetadata",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "CDR_Fact_Data",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"fieldList": [
+								"exists"
+							],
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"enablePartitionDiscovery": false
+							},
+							"formatSettings": {
+								"type": "DelimitedTextReadSettings"
+							}
+						}
+					},
+					{
+						"name": "If Condition1",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "Get Metadata1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@activity('Get Metadata1').output.exists",
+								"type": "Expression"
+							},
+							"ifFalseActivities": [
+								{
+									"name": "Fail1",
+									"type": "Fail",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"message": "errored",
+										"errorCode": "100"
+									}
+								}
+							],
+							"ifTrueActivities": [
+								{
+									"name": "Web1",
+									"type": "WebActivity",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"method": "GET",
+										"headers": {},
+										"url": "https://v6.exchangerate-api.com/v6/d2dc0f83029c12073054e204/latest/INR",
+										"connectVia": {
+											"referenceName": "AutoResolveIntegrationRuntime",
+											"type": "IntegrationRuntimeReference"
+										}
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2026-05-02T18:01:57Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/CDR_Fact_Data')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/lkp_test')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"state": "Inactive",
+						"onInactiveMarkAs": "Succeeded",
+						"dependsOn": [
+							{
+								"activity": "Lookup1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "MySqlSource",
+								"query": {
+									"value": "@concat('SELECT * FROM dim_device WHERE updated_at > ''', activity('Lookup1').output.firstRow.WatermarkValue, '''')",
+									"type": "Expression"
+								}
+							},
+							"sink": {
+								"type": "SqlServerSink",
+								"writeBehavior": "upsert",
+								"upsertSettings": {
+									"useTempDB": true,
+									"keys": [
+										"device_id"
+									]
+								},
+								"sqlWriterUseTableLock": false,
+								"tableOption": "autoCreate"
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "MySqlTable1",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "SqlServerTable1",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "Script1",
+						"type": "Script",
+						"state": "Inactive",
+						"onInactiveMarkAs": "Succeeded",
+						"dependsOn": [
+							{
+								"activity": "Copy data1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"linkedServiceName": {
+							"referenceName": "SqlServer1",
+							"type": "LinkedServiceReference"
+						},
+						"typeProperties": {
+							"scripts": [
+								{
+									"type": "NonQuery",
+									"text": {
+										"value": "update dbo.watermarktable set WatermarkValue = (select max(updated_at) from dbo.device1))",
+										"type": "Expression"
+									}
+								}
+							],
+							"scriptBlockExecutionTimeout": "02:00:00"
+						}
+					},
+					{
+						"name": "Lookup1",
+						"type": "Lookup",
+						"state": "Inactive",
+						"onInactiveMarkAs": "Succeeded",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": "select max(watermarkvalue) as watermarkvalue from watermarktable;",
+								"queryTimeout": "02:00:00",
+								"isolationLevel": "ReadCommitted",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "SqlServerTable1",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "Copy data1_copy1",
+						"type": "Copy",
+						"state": "Inactive",
+						"onInactiveMarkAs": "Succeeded",
+						"dependsOn": [
+							{
+								"activity": "Lookup1_copy1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "MySqlSource",
+								"query": {
+									"value": "@concat('SELECT * FROM dim_device WHERE updated_at > ''', activity('Lookup1_copy1').output.firstRow.WatermarkValue, '''')",
+									"type": "Expression"
+								}
+							},
+							"sink": {
+								"type": "SqlServerSink",
+								"writeBehavior": "upsert",
+								"upsertSettings": {
+									"useTempDB": true,
+									"keys": [
+										"device_id"
+									]
+								},
+								"sqlWriterUseTableLock": false,
+								"tableOption": "autoCreate"
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "MySqlTable1",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "SqlServerTable1",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "Lookup1_copy1",
+						"type": "Lookup",
+						"state": "Inactive",
+						"onInactiveMarkAs": "Succeeded",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": "select max(updated_at) as watermarkvalue from dbo.device1;",
+								"queryTimeout": "02:00:00",
+								"isolationLevel": "ReadCommitted",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "SqlServerTable1",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "Stored procedure1",
+						"type": "SqlServerStoredProcedure",
+						"state": "Inactive",
+						"onInactiveMarkAs": "Succeeded",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[dbo].[usp_UpdateProductPrice]",
+							"storedProcedureParameters": {
+								"NewPrice": {
+									"value": {
+										"value": "@pipeline().parameters.price",
+										"type": "Expression"
+									},
+									"type": "Decimal"
+								},
+								"ProductID": {
+									"value": {
+										"value": "@pipeline().parameters.prodid",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "SqlServer1",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "Validation1",
+						"type": "Validation",
+						"state": "Inactive",
+						"onInactiveMarkAs": "Succeeded",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "DelimitedText1",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"timeout": "0.00:02:00",
+							"sleep": 10
+						}
+					},
+					{
+						"name": "Lookup2",
+						"type": "Lookup",
+						"state": "Inactive",
+						"onInactiveMarkAs": "Succeeded",
+						"dependsOn": [
+							{
+								"activity": "Validation1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"dataset": {
+								"referenceName": "DelimitedText1",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "ForEach1",
+						"type": "ForEach",
+						"state": "Inactive",
+						"onInactiveMarkAs": "Succeeded",
+						"dependsOn": [
+							{
+								"activity": "Lookup2",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Lookup2').output.value",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "Script2_copy1_copy1",
+									"type": "Script",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"linkedServiceName": {
+										"referenceName": "SqlServer1",
+										"type": "LinkedServiceReference"
+									},
+									"typeProperties": {
+										"scripts": [
+											{
+												"type": "NonQuery",
+												"text": {
+													"value": "@concat(\n    'INSERT INTO dbo.products1 (price, productid) VALUES (', \n    json(activity('Lookup2').output.value[0].prodid[0].ColumnName).amt, \n    ', ', \n    json(activity('Lookup2').output.value[0].amt[0].ColumnName).prodid, \n    ')'\n)",
+													"type": "Expression"
+												}
+											}
+										],
+										"scriptBlockExecutionTimeout": "02:00:00"
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"prodid": {
+						"type": "int"
+					},
+					"price": {
+						"type": "float"
+					}
+				},
+				"variables": {
+					"var1": {
+						"type": "String"
+					},
+					"arg1": {
+						"type": "Array"
+					}
+				},
+				"annotations": [],
+				"lastPublishTime": "2026-05-09T06:05:00Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/MySqlTable1')]",
+				"[concat(variables('factoryId'), '/datasets/DelimitedText1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pipeline1')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "GoogleBigQueryV2Source"
+							},
+							"sink": {
+								"type": "SqlServerSink",
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false,
+								"tableOption": "autoCreate"
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "GoogleBigQueryObject1",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "SqlServerTable1",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2026-05-09T06:04:59Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/GoogleBigQueryObject1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/usecase1_blob_adls')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "copy data from blob to adls",
+						"description": "source send data to blob, this activity will pull once in 15 minutes and write to adls",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "ETA Validation 15 mins",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 2,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "JsonSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings",
+									"copyBehavior": "PreserveHierarchy"
+								},
+								"formatSettings": {
+									"type": "JsonWriteSettings"
+								}
+							},
+							"enableStaging": false,
+							"parallelCopies": 2,
+							"enableSkipIncompatibleRow": true,
+							"logSettings": {
+								"enableCopyActivityLog": true,
+								"copyActivityLogSettings": {
+									"logLevel": "Warning",
+									"enableReliableLogging": false
+								},
+								"logLocationSettings": {
+									"linkedServiceName": {
+										"referenceName": "ManuaADLSStorageTarget",
+										"type": "LinkedServiceReference"
+									},
+									"path": "adlscontainer"
+								}
+							},
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "call_id",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['call_id']"
+										}
+									},
+									{
+										"source": {
+											"name": "caller_id",
+											"type": "Int64"
+										},
+										"sink": {
+											"path": "$['caller_id']"
+										}
+									},
+									{
+										"source": {
+											"name": "device_id",
+											"type": "Int16"
+										},
+										"sink": {
+											"path": "$['device_id']"
+										}
+									},
+									{
+										"source": {
+											"name": "receiver_id",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['receiver_id']"
+										}
+									},
+									{
+										"source": {
+											"name": "call_type",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['call_type']"
+										}
+									},
+									{
+										"source": {
+											"name": "tower_id",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['tower_id']"
+										}
+									},
+									{
+										"source": {
+											"name": "timestamp",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['timestamp']"
+										}
+									},
+									{
+										"source": {
+											"name": "cost",
+											"type": "String"
+										},
+										"sink": {
+											"path": "$['cost']"
+										}
+									}
+								]
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "CDR_Fact_Data",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "Json1",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "Delete1",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "copy data from blob to adls",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "CDR_Fact_Data",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"enableLogging": false,
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "ETA Validation 15 mins",
+						"type": "Validation",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "CDR_Fact_Data",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"timeout": "0.00:01:00",
+							"sleep": 10,
+							"minimumSize": 1
+						}
+					},
+					{
+						"name": "Fail1",
+						"type": "Fail",
+						"dependsOn": [
+							{
+								"activity": "ETA Validation 15 mins",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"message": "File not found after ETA is met",
+							"errorCode": "1"
+						}
+					},
+					{
+						"name": "Fail1_copy1",
+						"type": "Fail",
+						"dependsOn": [
+							{
+								"activity": "copy data from blob to adls",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"message": "File found within the SLA, but failure occurs for some other reason",
+							"errorCode": "2"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2026-05-02T05:07:25Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/CDR_Fact_Data')]",
+				"[concat(variables('factoryId'), '/datasets/Json1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/usecase2_db_file_ingestion')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Ingestion from SOR to SOI Datalake",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "MySqlSource",
+								"query": "select * from cust_dim where maritalstatus='married'"
+							},
+							"sink": {
+								"type": "JsonSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings",
+									"copyBehavior": "FlattenHierarchy"
+								},
+								"formatSettings": {
+									"type": "JsonWriteSettings"
+								}
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "MySqlTable1",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "Json1",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2026-05-09T06:05:00Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/MySqlTable1')]",
+				"[concat(variables('factoryId'), '/datasets/Json1')]"
+			]
+		}
+	]
+}

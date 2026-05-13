@@ -1,0 +1,111 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "we47-adf-studio"
+		},
+		"AzureBlobStorage1_connectionString": {
+			"value": ""
+		},
+		"AzureDataLakeStorage1_accountKey": {
+			"value": ""
+		},
+		"AzureDatabricks1_accessToken": {
+			"value": ""
+		},
+		"AzureSqlDatabase1_password": {
+			"value": ""
+		},
+		"CTSJobADLSTarget1_accountKey": {
+			"value": ""
+		},
+		"GCP_MYSQL_Telco_Schema_password": {
+			"value": ""
+		},
+		"GoogleBigQuery1_keyFileContent": {
+			"value": ""
+		},
+		"ManuaADLSStorageTarget_accountKey": {
+			"value": ""
+		},
+		"ManualBlobStorageSource_connectionString": {
+			"value": ""
+		},
+		"ODataForSAPByDesign_password": {
+			"value": ""
+		},
+		"SqlServer1_password": {
+			"value": ""
+		},
+		"AzureDataLakeStorage1_properties_typeProperties_url": {
+			"value": "https://we47toolstorage.dfs.core.windows.net/"
+		},
+		"AzureDatabricks1_properties_typeProperties_existingClusterId": {
+			"value": "0408-130813-6txnfq1u"
+		},
+		"AzureSqlDatabase1_properties_typeProperties_server": {
+			"value": "iz-sqlserver-db3.database.windows.net"
+		},
+		"AzureSqlDatabase1_properties_typeProperties_database": {
+			"value": "izdb"
+		},
+		"AzureSqlDatabase1_properties_typeProperties_userName": {
+			"value": "izadmin"
+		},
+		"CTSJobADLSTarget1_properties_typeProperties_url": {
+			"value": "https://we47toolstorage.dfs.core.windows.net/"
+		},
+		"GCP_MYSQL_Telco_Schema_properties_typeProperties_server": {
+			"value": "35.223.80.16"
+		},
+		"GCP_MYSQL_Telco_Schema_properties_typeProperties_database": {
+			"value": "telco_schema"
+		},
+		"GCP_MYSQL_Telco_Schema_properties_typeProperties_username": {
+			"value": "inceptez"
+		},
+		"ManuaADLSStorageTarget_properties_typeProperties_url": {
+			"value": "https://wd36adlsstoragedata.dfs.core.windows.net/"
+		},
+		"ODataForSAPByDesign_properties_typeProperties_url": {
+			"value": "https://my340052.sapbydesign.com/sap/byd/odata/cust/v1/khsupplierinvoice/"
+		},
+		"ODataForSAPByDesign_properties_typeProperties_userName": {
+			"value": "rtech1"
+		},
+		"RestService1_properties_typeProperties_url": {
+			"value": "https://v6.exchangerate-api.com/v6/d2dc0f83029c12073054e204/latest/USD"
+		},
+		"SqlServer1_properties_typeProperties_server": {
+			"value": "iz-sqlserver-db3.database.windows.net"
+		},
+		"SqlServer1_properties_typeProperties_database": {
+			"value": "izdb"
+		},
+		"SqlServer1_properties_typeProperties_userName": {
+			"value": "izadmin"
+		},
+		"trigger1_properties_usecase9_Orchestrate_Dataflow_parameters_partparamtodataflow": {
+			"value": 3
+		},
+		"trigger1_properties_typeProperties_scope": {
+			"value": "/subscriptions/e68a829e-83e8-42bc-8494-b4ceb80be6c7/resourceGroups/wd36-rg1/providers/Microsoft.Storage/storageAccounts/we47toolstorage"
+		},
+		"trigger2_properties_pipeline_parameters_parent_pipeline_api_param1": {
+			"value": [
+				"SGD",
+				"USD"
+			]
+		},
+		"trigger2_properties_pipeline_parameters_parent_pipeline_filename_param2": {
+			"value": "apidata"
+		},
+		"containerUri": {
+			"value": ""
+		},
+		"containerSasToken": {
+			"value": ""
+		}
+	}
+}
