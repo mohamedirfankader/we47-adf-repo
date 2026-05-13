@@ -2,7 +2,7 @@
 	"name": "CDR_Fact_Data",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "ManualBlobStorageSource",
+			"referenceName": "AzureBlobStorage1",
 			"type": "LinkedServiceReference"
 		},
 		"annotations": [],
